@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Superscript Helper</title>
+  <style>
+    /* General Styles */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f9fafb;
+      color: #333;
+      line-height: 1.6;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    header {
+      background-color: #4CAF50;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      font-size: 1.5rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      position: relative;
+      animation: fadeIn 1s ease-in-out;
+    }
+    main {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 30px;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      animation: slideUp 1s ease-in-out;
+    }
+    p {
+      margin-bottom: 15px;
+      font-size: 1rem;
+      color: #555;
+      transition: color 0.3s ease;
+    }
+    textarea {
+      width: 100%;
+      height: 150px;
+      padding: 15px;
+      font-size: 1rem;
+      margin-bottom: 15px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      resize: none;
+      background-color: #f9fafb;
+      color: #333;
+      transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+      animation: fadeIn 1s ease-in-out;
+    }
+    textarea:focus {
+      border-color: #4CAF50;
+      outline: none;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      animation: fadeIn 1s ease-in-out;
+    }
+    button:hover {
+      background-color: #45a049;
+      transform: scale(1.05);
+    }
+    .output {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #f9fafb;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 1rem;
+      white-space: pre-wrap;
+      min-height: 100px;
+      position: relative;
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+      animation: fadeIn 1s ease-in-out;
+    }
+    .output-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    .copy-btn, .paste-btn {
+      flex: 1;
+    }
+    footer {
+      text-align: center;
+      margin-top: 20px;
+      padding: 10px;
+      font-size: 0.9rem;
+      color: #666;
+      transition: color 0.3s ease;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    /* Visit Counter Styles */
+    .visit-counter {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 0.9rem;
+      color: white;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    /* Study-Related Animations */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+    @keyframes slideUp {
+      from {
+        transform: translateY(20px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+    @keyframes typing {
+      from {
+        width: 0;
+      }
+      to {
+        width: 100%;
+      }
+    }
+    @keyframes blink-caret {
+      from, to {
+        border-color: transparent;
+      }
+      50% {
+        border-color: #4CAF50;
+      }
+    }
+
+    /* Typewriter Effect for Header */
+    header h1 {
+      overflow: hidden;
+      white-space: nowrap;
+      margin: 0 auto;
+      letter-spacing: 0.15em;
+      animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
+    }
+
+    /* Book Icon Animation */
+    .book-icon {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 2rem;
+      color: white;
+      animation: bookOpenClose 2s ease-in-out infinite;
+    }
+    @keyframes bookOpenClose {
+      0%, 100% {
+        transform: rotate(0deg);
+      }
+      50% {
+        transform: rotate(10deg);
+      }
+    }
+
+    /* Dark Mode Toggle Button */
+    .dark-mode-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      z-index: 1000;
+      transition: background-color 0.3s ease;
+      animation: fadeIn 1s ease-in-out;
+    }
+    .dark-mode-toggle:hover {
+      background-color: #45a049;
+    }
+
+    /* Dark Mode Styles */
+    body.dark-mode {
+      background-color: #1c1c1e;
+      color: #ffffff;
+    }
+    body.dark-mode header {
+      background-color: #1e3a8a;
+      color: #ffffff;
+    }
+    body.dark-mode main {
+      background-color: #2c2c2e;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+    }
+    body.dark-mode p {
+      color: #a8a8a8;
+    }
+    body.dark-mode textarea {
+      background-color: #3a3a3c;
+      color: #ffffff;
+      border-color: #48484a;
+    }
+    body.dark-mode .output {
+      background-color: #3a3a3c;
+      border-color: #48484a;
+    }
+    body.dark-mode footer {
+      color: #a8a8a8;
+    }
+    body.dark-mode .visit-counter {
+      color: #a8a8a8;
+    }
+  </style>
+</head>
+<body class="dark-mode">
+  <header>
+    <span class="book-icon">📚</span>
+    <h1>Superscript Helper for Manuscripts</h1>
+    <div class="visit-counter" id="visitCounter">Visits: Loading...</div>
+  </header>
+  <main>
+    <p>Paste your text below. Characters inside double parentheses <code>((...))</code> will be converted to superscript.</p>
+
+    <textarea id="inputText" placeholder="Enter your text here..."></textarea>
+    <div class="output-buttons">
+      <button class="paste-btn" onclick="pasteText()">Paste</button>
+      <button onclick="convertToSuperscript()">Convert</button>
+    </div>
+
+    <div class="output" id="outputText">Your formatted text will appear here.</div>
+    <div class="output-buttons">
+      <button class="copy-btn" onclick="copyText()">Copy</button>
+      <a id="downloadLink" style="display: none;" download="formatted-text.docx">
+        <button>Download as Word Document</button>
+      </a>
+    </div>
+  </main>
+  <footer>
+    &copy; 2023 Superscript Helper. All rights reserved.
+  </footer>
+
+  <!-- Dark Mode Toggle Button -->
+  <button class="dark-mode-toggle" onclick="toggleDarkMode()">Toggle Light Mode</button>
+
+  <script>
+    // Paste Text Functionality
+    function pasteText() {
+      navigator.clipboard.readText()
+        .then(text => {
+          document.getElementById('inputText').value = text;
+        })
+        .catch(err => {
+          alert("Failed to paste text. Please try again.");
+        });
+    }
+
+    // Convert to Superscript
+    function convertToSuperscript() {
+      const inputText = document.getElementById('inputText').value;
+
+      // Replace ((...)) with superscript
+      const formattedText = inputText.replace(/\(\((.*?)\)\)/g, '<sup>$1</sup>');
+
+      // Display the formatted text
+      const outputDiv = document.getElementById('outputText');
+      outputDiv.innerHTML = formattedText || "Your formatted text will appear here.";
+
+      // Generate a downloadable Word document
+      const docContent = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" 
+              xmlns:w="urn:schemas-microsoft-com:office:word" 
+              xmlns="http://www.w3.org/TR/REC-html40">
+          <head>
+            <meta charset="UTF-8">
+            <title>Formatted Text</title>
+          </head>
+          <body>
+            ${formattedText}
+          </body>
+        </html>
+      `;
+
+      // Create a Blob for the Word document
+      const blob = new Blob([docContent], { type: 'application/msword' });
+
+      // Update the download link
+      const downloadLink = document.getElementById('downloadLink');
+      downloadLink.href = URL.createObjectURL(blob);
+      downloadLink.style.display = 'inline-block';
+    }
+
+    // Copy Text Functionality
+    function copyText() {
+      const outputText = document.getElementById('outputText').innerText;
+
+      if (!outputText || outputText === "Your formatted text will appear here.") {
+        alert("No text to copy!");
+        return;
+      }
+
+      navigator.clipboard.writeText(outputText)
+        .then(() => {
+          alert("Text copied to clipboard!");
+        })
+        .catch(err => {
+          alert("Failed to copy text. Please try again.");
+        });
+    }
+
+    // Dark Mode Toggle Functionality
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      const isDarkMode = document.body.classList.contains('dark-mode');
+      localStorage.setItem('darkMode', isDarkMode);
+    }
+
+    // Load Dark Mode Preference from Local Storage
+    window.onload = () => {
+      const isDarkMode = localStorage.getItem('darkMode') !== 'false';
+      if (isDarkMode) {
+        document.body.classList.add('dark-mode');
+      }
+
+      // Initialize Visit Counter
+      fetch('https://api.countapi.xyz/hit/superscripthelper/visits')
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('visitCounter').textContent = `Visits: ${data.value}`;
+        })
+        .catch(err => {
+          document.getElementById('visitCounter').textContent = 'Visits: Error';
+        });
+    };
+  </script>
+</body>
+</html>
