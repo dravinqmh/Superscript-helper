@@ -144,24 +144,8 @@
     .intro {
       margin-bottom: 20px;
       font-size: 1.1rem;
+      color: #333;
       text-align: center;
-    }
-
-    /* Dynamic Color Animation for Intro */
-    .dynamic-color {
-      background: linear-gradient(90deg, #FF7F50, #FFD700, #32CD32, #00BFFF, #9370DB);
-      background-size: 400%;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: dynamicColor 8s infinite;
-    }
-    @keyframes dynamicColor {
-      0% {
-        background-position: 0% 50%;
-      }
-      100% {
-        background-position: 100% 50%;
-      }
     }
 
     /* Footer Owner Name */
@@ -281,9 +265,7 @@
   </header>
   <main>
     <div class="intro">
-      <span class="dynamic-color">
-        Effortlessly format citations in your manuscript as superscripts without the need for extra shortcuts. Simply paste your text, convert, and download as a Word file.
-      </span>
+      Make your citations in manuscripts easy with just a click! No need to press extra buttons or shortcuts—simply paste your text and let us handle the rest.
     </div>
 
     <p>Paste your text below. Characters inside double parentheses <code>((...))</code> will be converted to superscript.</p>
@@ -360,59 +342,3 @@
     // Copy Text Functionality
     function copyText() {
       const outputText = document.getElementById('outputText').innerText;
-
-      if (!outputText || outputText === "Your formatted text will appear here.") {
-        alert("No text to copy!");
-        return;
-      }
-
-      navigator.clipboard.writeText(outputText)
-        .then(() => {
-          alert("Text copied to clipboard!");
-        })
-        .catch(err => {
-          alert("Failed to copy text. Please try again.");
-        });
-    }
-
-    // Dark Mode Toggle Functionality
-    function toggleDarkMode() {
-      document.body.classList.toggle('dark-mode');
-      const isDarkMode = document.body.classList.contains('dark-mode');
-      localStorage.setItem('darkMode', isDarkMode);
-
-      // Update the icon based on the mode
-      const toggleButton = document.getElementById('darkModeToggle');
-      toggleButton.textContent = isDarkMode ? '☀️' : '🌙';
-    }
-
-    // Load Dark Mode Preference from Local Storage
-    window.onload = () => {
-      const isDarkMode = localStorage.getItem('darkMode') !== 'false';
-      if (isDarkMode) {
-        document.body.classList.add('dark-mode');
-      }
-
-      // Set the correct icon based on the mode
-      const toggleButton = document.getElementById('darkModeToggle');
-      toggleButton.textContent = isDarkMode ? '☀️' : '🌙';
-
-      // Initialize Visit Counter
-      fetch('https://api.countapi.xyz/hit/superscripthelper/visits')
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          return response.json();
-        })
-        .then(data => {
-          document.getElementById('visitCounter').textContent = `Visits: ${data.value}`;
-        })
-        .catch(err => {
-          console.error('Error fetching visit count:', err);
-          document.getElementById('visitCounter').textContent = 'Visits: Error';
-        });
-    };
-  </script>
-</body>
-</html>
