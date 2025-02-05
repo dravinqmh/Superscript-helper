@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Superscript Helper</title>
+  <meta name="google-site-verification" content="8w0Q5EpMFQiPQO9r3GYDz7Hgb_V5N7UVsmtNSd1gzJE" />
+  <title>Superscript Helper for Manuscripts</title>
   <style>
     /* General Styles */
     body {
@@ -28,7 +29,7 @@
     main {
       max-width: 800px;
       margin: 20px auto;
-      padding: 30px;
+      padding: 20px;
       background-color: white;
       border-radius: 12px;
       box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
@@ -271,6 +272,74 @@
     body.dark-mode .dark-mode-toggle:hover {
       background-color: #172c66;
     }
+
+    /* Responsive Design for Mobile */
+    @media (max-width: 768px) {
+      header h1 {
+        font-size: 1.2rem;
+      }
+      main {
+        padding: 15px;
+      }
+      textarea {
+        height: 120px;
+        font-size: 0.9rem;
+      }
+      button {
+        font-size: 0.9rem;
+        padding: 8px 15px;
+      }
+      .output {
+        font-size: 0.9rem;
+      }
+      .output-buttons {
+        flex-direction: column;
+      }
+      .copy-btn, .paste-btn {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+      .dark-mode-toggle {
+        width: 35px;
+        height: 35px;
+        font-size: 1rem;
+      }
+      .visit-counter {
+        font-size: 0.8rem;
+      }
+      .intro {
+        font-size: 1rem;
+      }
+    }
+
+    /* Additional Mobile Enhancements */
+    @media (max-width: 480px) {
+      header h1 {
+        font-size: 1rem;
+      }
+      textarea {
+        height: 100px;
+        font-size: 0.8rem;
+      }
+      button {
+        font-size: 0.8rem;
+        padding: 6px 12px;
+      }
+      .output {
+        font-size: 0.8rem;
+      }
+      .dark-mode-toggle {
+        width: 30px;
+        height: 30px;
+        font-size: 0.9rem;
+      }
+      .visit-counter {
+        font-size: 0.7rem;
+      }
+      .intro {
+        font-size: 0.9rem;
+      }
+    }
   </style>
 </head>
 <body class="dark-mode">
@@ -288,10 +357,14 @@
 
     <p>Paste your text below. Characters inside double parentheses <code>((...))</code> will be converted to superscript.</p>
 
-    <textarea id="inputText" placeholder="Enter your text here..."></textarea>
+    <!-- Pre-filled Example Text -->
+    <textarea id="inputText" placeholder="Enter your text here...">
+This is an example text with citations ((1)), ((2)), and ((3)). You can also include multiple citations like ((4, 5, 6)) or even inline citations such as "as shown in ((7))".
+    </textarea>
     <div class="output-buttons">
       <button class="paste-btn" onclick="pasteText()">Paste</button>
       <button onclick="convertToSuperscript()">Convert</button>
+      <button onclick="checkGrammar()">Check Grammar</button>
     </div>
 
     <div class="output" id="outputText">Your formatted text will appear here.</div>
@@ -301,16 +374,25 @@
         <button>Download as Word Document</button>
       </a>
     </div>
+
+    <!-- Grammar Correction Output -->
+    <div class="output" id="grammarOutput" style="display: none;">
+      <h3>Corrected Text:</h3>
+      <div id="correctedText">Your corrected text will appear here.</div>
+      <div class="output-buttons">
+        <button class="copy-btn" onclick="copyCorrectedText()">Copy Corrected Text</button>
+        <a id="downloadGrammarLink" style="display: none;" download="corrected-text.docx">
+          <button>Download Corrected Text as Word Document</button>
+        </a>
+      </div>
+    </div>
   </main>
   <footer>
     &copy; 2023 Superscript Helper. All rights reserved.
     <div class="footer-owner">Developed by Dr. Avin</div>
   </footer>
 
-  <!-- Dark Mode Toggle Button -->
-  <button class="dark-mode-toggle" onclick="toggleDarkMode()" id="darkModeToggle">☀️</button>
-
-  <script>
+<script>
     // Paste Text Functionality
     function pasteText() {
       navigator.clipboard.readText()
@@ -375,6 +457,94 @@
         });
     }
 
+    // Check Grammar Functionality
+    function checkGrammar() {
+      const inputText = document.getElementById('inputText').value;
+
+      // Use LanguageTool API for grammar checking
+      const apiUrl = 'https://api.languagetool.org/v2/check';
+      const params = new URLSearchParams();
+      params.append('text', inputText);
+      params.append('language', 'en-US');
+
+      fetch(`${apiUrl}?${params.toString()}`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(data => {
+          let correctedText = inputText;
+
+          // Apply grammar corrections
+          if (data.matches && data.matches.length > 0) {
+            data.matches.forEach(match => {
+              const replacement = match.replacements[0]?.value || '';
+              correctedText = correctedText.substring(0, match.offset) +
+                              replacement +
+                              correctedText.substring(match.offset + match.length);
+            });
+          }
+
+          // Apply superscript formatting to the corrected text
+          correctedText = correctedText.replace(/\(\((.*?)\)\)/g, '<sup>$1</sup>');
+
+          // Display corrected text
+          const correctedTextDiv = document.getElementById('correctedText');
+          correctedTextDiv.innerHTML = correctedText || "No grammar errors found.";
+
+          // Show the grammar output section
+          const grammarOutput = document.getElementById('grammarOutput');
+          grammarOutput.style.display = 'block';
+
+          // Generate a downloadable Word document for corrected text
+          const docContent = `
+            <html xmlns:o="urn:schemas-microsoft-com:office:office" 
+                  xmlns:w="urn:schemas-microsoft-com:office:word" 
+                  xmlns="http://www.w3.org/TR/REC-html40">
+              <head>
+                <meta charset="UTF-8">
+                <title>Corrected Text</title>
+              </head>
+              <body>
+                ${correctedText}
+              </body>
+            </html>
+          `;
+
+          // Create a Blob for the Word document
+          const blob = new Blob([docContent], { type: 'application/msword' });
+
+          // Update the download link
+          const downloadGrammarLink = document.getElementById('downloadGrammarLink');
+          downloadGrammarLink.href = URL.createObjectURL(blob);
+          downloadGrammarLink.style.display = 'inline-block';
+        })
+        .catch(err => {
+          console.error('Error fetching grammar corrections:', err);
+          alert("An error occurred while checking grammar. Please try again later.");
+        });
+    }
+
+    // Copy Corrected Text Functionality
+    function copyCorrectedText() {
+      const correctedText = document.getElementById('correctedText').innerText;
+
+      if (!correctedText || correctedText === "Your corrected text will appear here.") {
+        alert("No corrected text to copy!");
+        return;
+      }
+
+      navigator.clipboard.writeText(correctedText)
+        .then(() => {
+          alert("Corrected text copied to clipboard!");
+        })
+        .catch(err => {
+          alert("Failed to copy corrected text. Please try again.");
+        });
+    }
+
     // Dark Mode Toggle Functionality
     function toggleDarkMode() {
       document.body.classList.toggle('dark-mode');
@@ -416,3 +586,6 @@
   </script>
 </body>
 </html>
+  <!-- Dark Mode Toggle Button -->
+  <button class="dark-mode-toggle" onclick="toggleDarkMode()" id="darkModeToggle">☀️</button>
+
