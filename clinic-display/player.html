@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Clinic Display</title>
+<style>
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; }
+  #video, #image { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; }
+  #image { display: none; background-size: contain; background-position: center; background-repeat: no-repeat; }
+  #start {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: #000; color: #fff; font-family: Helvetica, Arial, sans-serif;
+    text-align: center; z-index: 10;
+  }
+  #start .box { position: absolute; top: 40%; left: 0; width: 100%; }
+  #start h1 { font-size: 42px; margin: 0 0 16px; }
+  #start p { font-size: 22px; color: #aaa; margin: 0; }
+</style>
+</head>
+<body>
+<video id="video" playsinline webkit-playsinline preload="auto"></video>
+<div id="image"></div>
+<div id="start"><div class="box"><h1>Tap to start</h1><p id="status">Loading playlist…</p></div></div>
+
+<script>
+// Clinic looping player — written in plain ES5 so it runs on iOS 9 Safari (iPad 2).
+//
+// Where the list of files comes from (first one that works wins):
+//   1. playlist.txt next to this page — one file name per line, played in that order.
+//   2. The web server's folder listing of videos/ — every video/photo found, A–Z order.
+// The list is re-read after each full loop, so new files show up without touching the iPad.
+
+var PLAYLIST_FILE = 'playlist.txt';
+var MEDIA_FOLDER = 'videos/';
+var PHOTO_SECONDS = 8;      // how long each photo stays on screen
+var STALL_SECONDS = 20;     // skip an item that fails to start within this time
+
+var VIDEO_EXT = /\.(mp4|m4v|mov)$/i;
+var PHOTO_EXT = /\.(jpe?g|png|gif)$/i;
+
+var video = document.getElementById('video');
+var image = document.getElementById('image');
+var startScreen = document.getElementById('start');
+var statusText = document.getElementById('status');
+
+var items = [];
+var index = -1;
+var timer = null;
+var started = false;
+
+function get(url, ok, fail) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', url + (url.indexOf('?') < 0 ? '?' : '&') + 't=' + new Date().getTime(), true);
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState !== 4) return;
+    if (xhr.status >= 200 && xhr.status < 300) ok(xhr.responseText); else fail();
+  };
+  xhr.send();
+}
+
+function isMedia(name) { return VIDEO_EXT.test(name) || PHOTO_EXT.test(name); }
+
+function parsePlaylist(text) {
+  var out = [], lines = text.split(/\r?\n/);
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i].replace(/^\s+|\s+$/g, '');
+    if (!line || line.charAt(0) === '#' || !isMedia(line)) continue;
+    out.push(line.indexOf('/') < 0 ? MEDIA_FOLDER + encodeURIComponent(line) : line);
+  }
+  return out;
+}
+
+function parseFolderListing(html) {
+  var out = [], seen = {}, re = /href="([^"?#]+)"/gi, m;
+  while ((m = re.exec(html))) {
+    var href = m[1];
+    var name = decodeURIComponent(href.split('/').pop());
+    if (!isMedia(name) || name.charAt(0) === '.' || seen[name]) continue;
+    seen[name] = true;
+    out.push(MEDIA_FOLDER + encodeURIComponent(name));
+  }
+  out.sort();
+  return out;
+}
+
+function loadList(done) {
+  get(PLAYLIST_FILE, function (text) {
+    var list = parsePlaylist(text);
+    if (list.length) return done(list);
+    loadFromFolder(done);
+  }, function () { loadFromFolder(done); });
+}
+
+function loadFromFolder(done) {
+  get(MEDIA_FOLDER, function (html) { done(parseFolderListing(html)); },
+      function () { done([]); });
+}
+
+function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+function next() {
+  clearTimer();
+  index++;
+  if (index >= items.length) {
+    // End of the loop: pick up any files added or removed since last time.
+    index = 0;
+    loadList(function (list) {
+      if (list.length) items = list;
+      show();
+    });
+    return;
+  }
+  show();
+}
+
+function show() {
+  if (!items.length) {
+    statusText.innerHTML = 'No videos found. Retrying…';
+    timer = setTimeout(function () { loadList(function (l) { items = l; index = -1; next(); }); }, 10000);
+    return;
+  }
+  var src = items[index];
+  if (PHOTO_EXT.test(src)) {
+    video.pause();
+    video.style.display = 'none';
+    image.style.backgroundImage = 'url("' + src + '")';
+    image.style.display = 'block';
+    timer = setTimeout(next, PHOTO_SECONDS * 1000);
+  } else {
+    image.style.display = 'none';
+    video.style.display = 'block';
+    video.src = src;
+    video.load();
+    video.play();
+    timer = setTimeout(next, STALL_SECONDS * 1000);
+  }
+}
+
+video.addEventListener('playing', clearTimer);
+video.addEventListener('ended', next);
+video.addEventListener('error', function () { clearTimer(); timer = setTimeout(next, 1000); });
+
+// iOS 9 only allows video to start from a tap. After this first tap the same
+// <video> element keeps permission, so the loop then runs on its own.
+function begin() {
+  if (started || !items.length) return;
+  started = true;
+  startScreen.style.display = 'none';
+  index = -1;
+  next();
+}
+startScreen.addEventListener('touchend', function (e) { e.preventDefault(); begin(); });
+startScreen.addEventListener('click', begin);
+
+loadList(function (list) {
+  items = list;
+  statusText.innerHTML = list.length
+    ? list.length + ' item' + (list.length === 1 ? '' : 's') + ' ready'
+    : 'No videos found in "' + MEDIA_FOLDER + '" — add files and reload';
+});
+</script>
+</body>
+</html>

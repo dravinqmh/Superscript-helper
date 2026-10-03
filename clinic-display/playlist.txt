@@ -1,0 +1,5 @@
+# One file name per line, in the order to play. Lines starting with # are ignored.
+# Files go in the videos/ folder. Delete this file to play everything in videos/ A–Z.
+01-sitting-after-tkr.mp4
+02-running-after-tkr.mp4
+03-testimonial.mp4
