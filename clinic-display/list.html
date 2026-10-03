@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clinic Videos</title>
+<style>
+  body { margin: 0; padding: 16px; background: #111; color: #eee; font-family: Helvetica, Arial, sans-serif; }
+  h1 { font-size: 26px; margin: 0 0 4px; }
+  #count { color: #999; margin: 0 0 16px; }
+  a.play-all { display: block; padding: 16px; margin-bottom: 16px; background: #2a6df4; color: #fff;
+               text-align: center; font-size: 22px; text-decoration: none; border-radius: 8px; }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li { border-bottom: 1px solid #333; }
+  li a { display: block; padding: 18px 8px; color: #8cf; font-size: 20px; text-decoration: none; word-wrap: break-word; }
+  li span { color: #777; font-size: 14px; margin-left: 8px; }
+</style>
+</head>
+<body>
+<h1>Clinic videos</h1>
+<p id="count">Loading…</p>
+<a class="play-all" href="player.html">▶ Play all on loop</a>
+<ul id="list"></ul>
+
+<script>
+// Lists every video/photo in videos/ (plain ES5 for iOS 9 Safari).
+// Tap a name to play it; long-press to copy or download the link.
+var MEDIA = /\.(mp4|m4v|mov|jpe?g|png|gif)$/i;
+
+var xhr = new XMLHttpRequest();
+xhr.open('GET', 'videos/?t=' + new Date().getTime(), true);
+xhr.onreadystatechange = function () {
+  if (xhr.readyState !== 4) return;
+  var count = document.getElementById('count');
+  if (xhr.status < 200 || xhr.status >= 300) { count.innerHTML = 'Could not read the videos folder.'; return; }
+
+  var names = [], seen = {}, re = /href="([^"?#]+)"/gi, m;
+  while ((m = re.exec(xhr.responseText))) {
+    var name = decodeURIComponent(m[1].split('/').pop());
+    if (MEDIA.test(name) && name.charAt(0) !== '.' && !seen[name]) { seen[name] = true; names.push(name); }
+  }
+  names.sort();
+
+  var list = document.getElementById('list');
+  for (var i = 0; i < names.length; i++) {
+    var li = document.createElement('li');
+    var a = document.createElement('a');
+    a.href = 'videos/' + encodeURIComponent(names[i]);
+    a.setAttribute('download', names[i]);
+    a.appendChild(document.createTextNode(names[i]));
+    var kind = document.createElement('span');
+    kind.appendChild(document.createTextNode(/\.(mp4|m4v|mov)$/i.test(names[i]) ? 'video' : 'photo'));
+    a.appendChild(kind);
+    li.appendChild(a);
+    list.appendChild(li);
+  }
+  count.innerHTML = names.length ? names.length + ' file' + (names.length === 1 ? '' : 's') : 'No files yet — add them to the videos folder on the Mac.';
+};
+xhr.send();
+</script>
+</body>
+</html>
